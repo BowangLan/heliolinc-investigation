@@ -104,3 +104,32 @@ def createObservationsSpacerocks(population, mjd, progress=True):
 	t['MJD'] = mjds
 
 	return t
+
+
+
+import astropy.units as u
+import astropy.constants as c
+from astropy.table import Table
+import numpy as np
+
+
+
+#Creates a helio guess grid and writes it to out_filename
+
+def helio_guess_grid(out_filename, r_range = (1.1, 50), r_dot_range = (-1, 1), r_dot_dot_range = (0, 0), geometric_r = False, ns = (100, 9, 1), n_round = 3):
+    r = np.linspace(r_range[0], r_range[1], ns[0])
+    if geometric_r:
+        r = np.logspace(r_range[0], r_range[1], ns[0])
+    r_dot = np.linspace(r_dot_range[0], r_dot_range[1], ns[1])
+    r_dot_dot = np.linspace(r_dot_dot_range[0], r_dot_dot_range[1], ns[2])    
+    grid = np.array([[[(r_, r_dot_, r_dot_dot_) for r_dot_dot_ in r_dot_dot] for r_dot_ in r_dot] for r_ in r]).reshape(-1, 3)
+    tab = Table()
+    tab["r(AU)"] = grid.T[0].round(n_round)
+    GM = c.GM_sun.to(u.au ** 3 / (u.d**2)).value
+    v_esc = np.sqrt(2* GM / (tab["r(AU)"]))
+    tab["rdot(AU/day)"] = (grid.T[1] * v_esc).round(n_round)
+    tab["norm"] = 1
+    tab["mean_accel"] = grid.T[2].round(n_round)
+    tab.write(out_filename)
+    
+
