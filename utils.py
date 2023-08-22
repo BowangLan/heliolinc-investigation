@@ -11,7 +11,43 @@ from spacerocks.cbindings import correct_for_ltt_destnosim
 from spacerocks.observer import Observer
 from spacerocks.constants import epsilon
 
-def createObservationsSpacerocks(population, mjd, progress=True):
+
+def createRandomObjects(size: int):
+	# a, e, i, lan, aop, M
+	# a : 1.1 -  50
+	# e : 0.0 - 0.99
+	# i : 0 - 180
+	# lan : 0 - 360
+	# aop : 0 - 360
+	# M : 0 - 360
+
+
+	"""
+	- Semi-major axis: provide as 'a' (au)
+	- Eccentricity: provide as 'e'
+	- Perihelion: provide as 'q' (au)
+	- Inclination: provide as 'i' (degrees)
+	- Argument of perihelion: provide as 'omega' or 'aop' (degrees)
+	- Longitude of ascending node: provide as 'Omega' or 'lan' (degrees)
+	- Longitude of perihelion: provide as 'varpi' or 'lop' (degrees)
+	- Time of perihelion passage: provide as 'top' or 'T_p' (years)
+	- Mean anomaly: provide as 'man' or 'M' (degrees)
+	"""
+
+	table = tb.Table(
+		data=[
+			np.random.uniform(1.1, 50, size=size),
+			np.random.uniform(0, 0.99, size=size),
+			np.random.uniform(0, 180, size=size),
+			np.random.uniform(0, 360, size=size),
+			np.random.uniform(0, 360, size=size),
+			np.random.uniform(0, 360, size=size)
+		],
+		names=['a', 'e', 'i', 'Omega', 'omega', 'M']
+	)
+	return table
+
+def createObservationsSpacerocks(population, mjd, progress=False):
 	'''
 	Calls the Spacerocks backend to generate observations for the input population
 
@@ -42,6 +78,10 @@ def createObservationsSpacerocks(population, mjd, progress=True):
 	orbitid = np.array([])
 	mjds = np.array([])
 	oidlist = np.arange(len(population))
+	xList = np.array([])
+	yList = np.array([])
+	zList = np.array([])
+	dList = np.array([])
 
 	if progress == True:
 		from rich.progress import track
@@ -64,7 +104,13 @@ def createObservationsSpacerocks(population, mjd, progress=True):
 		vy = np.ascontiguousarray(vy)[sim.N_active:]
 		vz = np.ascontiguousarray(vz)[sim.N_active:]
 
-		observer = Observer(epoch=times.jd[i], obscode='W84', units=units)
+		xList = np.append(xList, x)
+		yList = np.append(yList, y)
+		zList = np.append(zList, z)
+		dList = np.append(dList, np.sqrt(x**2 + y**2 + z**2))
+
+		# observer = Observer(epoch=times.jd[i], obscode='W84', units=units)
+		observer = Observer.from_obscode('W84').at(times.jd[i])
 		ox = observer.x.au.astype(np.double)
 		oy = observer.y.au.astype(np.double)
 		oz = observer.z.au.astype(np.double)
@@ -88,20 +134,26 @@ def createObservationsSpacerocks(population, mjd, progress=True):
 		decs = np.append(decs, dec)
 
 
-
 	del x, y, z, vx, vy, vz, a, b, sim, xt, yt, zt, ox, oy, oz, observer
 	## gather data into something useable
 	t = tb.Table()
-	t['RA'] = ras
+	t['AstRA(deg)'] = ras
 	del ras
 	#t['RA'][t['RA'] > 180] -= 360
-	t['DEC'] = decs
+	t['AstDec(deg)'] = decs
 	del decs
-	t['ORBITID'] = orbitid
-	t['ORBITID'] = t['ORBITID'].astype('int64')
+	t['ObjID'] = orbitid.astype('int64')
 	del orbitid
 
-	t['MJD'] = mjds
+	t['FieldMJD'] = mjds
+	t['Mag'] = 20
+
+	t['d'] = dList
+	t['x'] = xList
+	t['y'] = yList
+	t['z'] = zList
+
+	# ObjID,FieldID,FieldMJD,AstRange(km),AstRangeRate(km/s),AstRA(deg),AstRARate(deg/day),AstDec(deg),AstDecRate(deg/day),Ast-Sun(J2000x)(km),Ast-Sun(J2000y)(km),Ast-Sun(J2000z)(km),Ast-Sun(J2000vx)(km/s),Ast-Sun(J2000vy)(km/s),Ast-Sun(J2000vz)(km/s),Obs-Sun(J2000x)(km),Obs-Sun(J2000y)(km),Obs-Sun(J2000z)(km),Obs-Sun(J2000vx)(km/s),Obs-Sun(J2000vy)(km/s),Obs-Sun(J2000vz)(km/s),Sun-Ast-Obs(deg),V,V(H=0),fiveSigmaDepth,filter,MaginFilterTrue,AstrometricSigma(mas),PhotometricSigma(mag),SNR,AstrometricSigma(deg),MaginFilter,dmagDetect,dmagVignet,AstRATrue(deg),AstDecTrue(deg),detector,OBSCODE,NA
 
 	return t
 
