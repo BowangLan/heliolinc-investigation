@@ -13,6 +13,22 @@
 
 ## Set Up
 
+## Set up Python Virtual Environment
+
+Create a Python virtual environment:
+
+```
+python -m venv venv
+```
+
+Activate the virtual environment.
+
+- MacOS/Linux
+  ```
+  source ./venv/bin/activate
+  ```
+
+
 ### Set up HelioLinc
 
 Download HelioLinc:
