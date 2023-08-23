@@ -1,4 +1,4 @@
-from utils import createObservationsSpacerocks, createRandomObjects, count_lines, createHelioGuessGrid
+from utils import createObservationsSpacerocks, createRandomObjects, count_lines, createHelioGuessGrid, extract_heliolinc_results
 from config import HELIO_PATH
 import destnosim
 from helio import run_make_tracklets, run_heliolinc
@@ -15,6 +15,9 @@ obs_file = HELIO_PATH / "tests/ObsCodes.txt"
 colformat_file = "colformat.txt"
 out_pairdets_file = "./temp/pairdets.csv"
 out_pairs_file = "./temp/pairs.csv"
+out_hl_file = "./temp/hl_out.csv"
+out_hlsum_file = "./temp/hl_outsum.csv"
+out_hl_extracted_file = "./temp/hl_extracted.feather"
 
 
 def main():
@@ -34,7 +37,15 @@ def main():
 
     createHelioGuessGrid(guess_file)
 
-    run_heliolinc(dets_file, out_pairs_file, mjd_list[2], earth_file, guess_file)
+    run_heliolinc(out_pairdets_file, out_pairs_file,
+                  mjd_list[2], earth_file, guess_file, out=out_hl_file, outsum=out_hlsum_file)
+
+    hl_count = count_lines(out_hl_file)
+    print(f"Heliolinc count: {hl_count}")
+    hlsum_count = count_lines(out_hlsum_file)
+    print(f"Heliolinc summary count: {hlsum_count}")
+
+    extract_heliolinc_results(out_hl_file, out_hlsum_file, out_hl_extracted_file)
 
 
 if __name__ == "__main__":

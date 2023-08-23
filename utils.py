@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import subprocess
 
 import astropy.table as tb
@@ -165,7 +166,7 @@ def createObservationsSpacerocks(population, mjd, progress=False):
 
 # Creates a helio guess grid and writes it to out_filename
 
-def createHelioGuessGrid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r_dot_dot_range=(0, 0), geometric_r=False, ns=(100, 9, 1), n_round=3):
+def createHelioGuessGrid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r_dot_dot_range=(0, 0), geometric_r=False, ns=(50, 5, 1), n_round=3):
     r = np.linspace(r_range[0], r_range[1], ns[0])
     if geometric_r:
         r = np.logspace(r_range[0], r_range[1], ns[0])
@@ -174,15 +175,33 @@ def createHelioGuessGrid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r
     grid = np.array([[[(r_, r_dot_, r_dot_dot_) for r_dot_dot_ in r_dot_dot]
                     for r_dot_ in r_dot] for r_ in r]).reshape(-1, 3)
     tab = tb.Table()
-    tab["r(AU)"] = grid.T[0].round(n_round)
+    tab["#r(AU)"] = grid.T[0].round(n_round)
     GM = c.GM_sun.to(u.au ** 3 / (u.d**2)).value
-    v_esc = np.sqrt(2 * GM / (tab["r(AU)"]))
+    v_esc = np.sqrt(2 * GM / (tab["#r(AU)"]))
     tab["rdot(AU/day)"] = (grid.T[1] * v_esc).round(n_round)
     tab["norm"] = 1
     tab["mean_accel"] = grid.T[2].round(n_round)
     tab.write(out_filename, delimiter=' ', overwrite=True)
 
 
+def extract_heliolinc_results(hl_out_file, hl_outsum_file, hl_extracted_file):
+    out = pd.read_csv(hl_out_file)
+    outs = pd.read_csv(hl_outsum_file)
+    cn_list = outs['#clusternum']
+    os_ids = out['idstring']
+    os_cn = out['clusternum']
+    cn_to_idstring = {}
+    for i in range(len(os_ids)):
+        cn = os_cn[i]
+        cn_to_idstring[cn] = os_ids[i]
+    idstring_list = [cn_to_idstring[cn] for cn in cn_list]
+    df = pd.DataFrame({'idstring': idstring_list, 'clusternum': cn_list,
+                    'heliodist': outs['heliodist'], 'heliovel': outs['heliovel'], 'helioacc': outs['helioacc']})
+    df.to_feather(hl_extracted_file)
+
+
 def count_lines(filename: str):
     t = subprocess.run(["wc", "-l", filename], capture_output=True)
     return int(t.stdout.decode().strip().split(" ")[0])
+
+

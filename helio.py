@@ -46,6 +46,19 @@ def run_heliolinc(
         outsum: str = "./temp/hl_outsum.csv",
         stdout_file: str = "./temp/heliolinc_output.txt",
 ):
+    """
+    Runs the heliolinc executable with the given parameters.
+
+    Parameters:
+    - dets (str): The name of the input detection catalog file in CSV format.
+    - pairs (str): The name of the input pair file that records the pairs and longer tracklets.
+    - mjd (int): The MJD of the observations.
+    - obspos (str): The name of the input file that contains the observatory codes and their geocentric positions.
+    - heliodist (str): The name of the input file that contains the heliocentric distance of the Earth as a function of time.
+    - out (str): The name of the output file that contains the heliocentric orbital elements of the objects.
+    - outsum (str): The name of the output file that contains the summary of the heliocentric orbital elements of the objects.
+    - stdout_file (str): The name of the file to write the stdout and stderr to.
+    """
     cmd = f"{HELIO_PATH / 'src/heliolinc'} -dets {dets} -pairs {pairs} -mjd {mjd} \
             -obspos {obspos} -heliodist {heliodist} -out {out} -outsum {outsum}"
 
