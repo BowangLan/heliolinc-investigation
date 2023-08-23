@@ -1,4 +1,5 @@
 import numpy as np
+import subprocess
 
 import astropy.table as tb
 from astropy.time import Time
@@ -131,7 +132,7 @@ def createObservationsSpacerocks(population, mjd, progress=False):
         ra[ra > 180] -= 360
 
         orbitid = np.append(orbitid, oidlist)
-        mjds = np.append(mjds, len(oidlist) * [i])
+        mjds = np.append(mjds, len(oidlist) * [mjd[i]])
 
         ras = np.append(ras, ra)
         decs = np.append(decs, dec)
@@ -149,6 +150,8 @@ def createObservationsSpacerocks(population, mjd, progress=False):
 
     t['FieldMJD'] = mjds
     t['Mag'] = 20
+    t['Band'] = 'r'
+    t['ObsCode'] = 'W84'
 
     t['d'] = dList
     t['x'] = xList
@@ -178,3 +181,8 @@ def createHelioGuessGrid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r
     tab["norm"] = 1
     tab["mean_accel"] = grid.T[2].round(n_round)
     tab.write(out_filename)
+
+
+def count_lines(filename: str):
+    t = subprocess.run(["wc", "-l", filename], capture_output=True)
+    return int(t.stdout.decode().strip().split(" ")[0])
