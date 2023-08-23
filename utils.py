@@ -180,7 +180,7 @@ def createHelioGuessGrid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r
     tab["rdot(AU/day)"] = (grid.T[1] * v_esc).round(n_round)
     tab["norm"] = 1
     tab["mean_accel"] = grid.T[2].round(n_round)
-    tab.write(out_filename)
+    tab.write(out_filename, delimiter=' ', overwrite=True)
 
 
 def count_lines(filename: str):
