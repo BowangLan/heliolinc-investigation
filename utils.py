@@ -184,7 +184,7 @@ def createHelioGuessGrid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r
     tab.write(out_filename, delimiter=' ', overwrite=True)
 
 
-def extract_heliolinc_results(hl_out_file, hl_outsum_file, hl_extracted_file):
+def extract_heliolinc_results(hl_out_file, hl_outsum_file):
     out = pd.read_csv(hl_out_file)
     outs = pd.read_csv(hl_outsum_file)
     cn_list = outs['#clusternum']
@@ -195,9 +195,26 @@ def extract_heliolinc_results(hl_out_file, hl_outsum_file, hl_extracted_file):
         cn = os_cn[i]
         cn_to_idstring[cn] = os_ids[i]
     idstring_list = [cn_to_idstring[cn] for cn in cn_list]
-    df = pd.DataFrame({'idstring': idstring_list, 'clusternum': cn_list,
+    return pd.DataFrame({'idstring': idstring_list, 'clusternum': cn_list,
                     'heliodist': outs['heliodist'], 'heliovel': outs['heliovel'], 'helioacc': outs['helioacc']})
-    df.to_feather(hl_extracted_file)
+
+
+def extract_object_truth_values(dets, mjdRef: float = 60683.5, mjd_list_len: int = 6):
+    dets1 = dets[['ObjID', 'd', 'FieldMJD']]
+    dets1.sort_values('ObjID', inplace=True)
+    dList = dets1['d'].values
+    mjdList = (dets1['FieldMJD'] - mjdRef).values
+    objCount = int(len(dList) / mjd_list_len)
+    helioTruth = []
+    for oid in range(objCount):
+        x = mjdList[oid * mjd_list_len: (oid + 1) * mjd_list_len] # day
+        y = dList[oid * mjd_list_len: (oid + 1) * mjd_list_len] # AU
+        fit = np.polyfit(x, y, 2)
+        helioTruth.append(fit)
+
+    helioTruth = np.array(helioTruth)
+    ha, hv, hd = helioTruth.T
+    return pd.DataFrame({'ObjID': np.arange(objCount), 'helioDist': hd, 'helioVel': hv, 'helioAcc': ha})
 
 
 def count_lines(filename: str):

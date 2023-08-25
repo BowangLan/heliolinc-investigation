@@ -6,7 +6,7 @@
 - Jake Kurlander: first-year UW astronomy grad student, [jkurla@uw.edu](mailto:jkurla@uw.edu)
 - Ari Heinze: Research scientist, HelioLinC implementer, [ariheinze@hotmail.com](mailto:ariheinze@hotmail.com)
 
-## Related Projects
+## Dependencies
 
 - https://github.com/kjnapier/spacerocks
 - https://github.com/lsst-dm/heliolinc2
@@ -102,3 +102,6 @@ pip install .
   extra_link_args = ['-L/usr/local/opt/libomp/lib -Wl,-lomp,-install_name,@rpath/libspacerocks' + suffix]
   ```
   by adding `-L/usr/local/opt/libomp/lib` flag
+
+## Main Steps
+
