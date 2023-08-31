@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import subprocess
+import matplotlib.pyplot as plt
 
 import astropy.table as tb
 from astropy.time import Time
@@ -222,3 +223,14 @@ def count_lines(filename: str):
     return int(t.stdout.decode().strip().split(" ")[0])
 
 
+
+def plot_hypo_diff_grid(helio_extracted, obj_table, ax=None):
+    linked_id_list = set(helio_extracted['idstring'].unique())
+    linked_obj_list = obj_table[obj_table['ObjID'].isin(linked_id_list)]
+    not_linked_obj_list = obj_table[~obj_table['ObjID'].isin(linked_id_list)]
+    if ax:
+        ax.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c='green')
+        ax.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c='red')
+    else:
+        plt.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c='green')
+        plt.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c='red')

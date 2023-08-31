@@ -5,7 +5,7 @@ from helio import run_make_tracklets, run_heliolinc
 from time import time
 
 
-size = 800
+size = 10000
 t = 25
 mjd_list = [t + 60676 for t in [0.5, 0.6, 7.5, 7.6, 13.5, 13.6]]
 mjd_ref = mjd_list[2]
