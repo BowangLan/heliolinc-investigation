@@ -103,5 +103,5 @@ pip install .
   ```
   by adding `-L/usr/local/opt/libomp/lib` flag
 
-## Main Steps
+## Main Process
 

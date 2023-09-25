@@ -202,7 +202,7 @@ def extract_heliolinc_results(hl_out_file, hl_outsum_file):
 
 def extract_object_truth_values(dets, mjdRef: float = 60683.5, mjd_list_len: int = 6):
     dets1 = dets[['ObjID', 'd', 'FieldMJD']]
-    dets1.sort_values('ObjID', inplace=True)
+    dets1 = dets1.sort_values('ObjID')
     dList = dets1['d'].values
     mjdList = (dets1['FieldMJD'] - mjdRef).values
     objCount = int(len(dList) / mjd_list_len)
@@ -224,13 +224,13 @@ def count_lines(filename: str):
 
 
 
-def plot_hypo_diff_grid(helio_extracted, obj_table, ax=None):
+def plot_hypo_diff_grid(helio_extracted, obj_table, ax=None, c_linked = "blue", c_not_linked = "orange"):
     linked_id_list = set(helio_extracted['idstring'].unique())
     linked_obj_list = obj_table[obj_table['ObjID'].isin(linked_id_list)]
     not_linked_obj_list = obj_table[~obj_table['ObjID'].isin(linked_id_list)]
     if ax:
-        ax.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c='green')
-        ax.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c='red')
+        ax.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c=c_linked)
+        ax.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c=c_not_linked)
     else:
-        plt.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c='green')
-        plt.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c='red')
+        plt.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c=c_linked)
+        plt.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c=c_not_linked)
