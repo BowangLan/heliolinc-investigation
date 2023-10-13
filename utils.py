@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import subprocess
 import matplotlib.pyplot as plt
+from timeit import default_timer as time
 
 import astropy.table as tb
 from astropy.time import Time
@@ -197,7 +198,7 @@ def extract_heliolinc_results(hl_out_file, hl_outsum_file):
         cn_to_idstring[cn] = os_ids[i]
     idstring_list = [cn_to_idstring[cn] for cn in cn_list]
     return pd.DataFrame({'idstring': idstring_list, 'clusternum': cn_list,
-                    'heliodist': outs['heliodist'], 'heliovel': outs['heliovel'], 'helioacc': outs['helioacc']})
+                         'heliodist': outs['heliodist'], 'heliovel': outs['heliovel'], 'helioacc': outs['helioacc']})
 
 
 def extract_object_truth_values(dets, mjdRef: float = 60683.5, mjd_list_len: int = 6):
@@ -208,8 +209,8 @@ def extract_object_truth_values(dets, mjdRef: float = 60683.5, mjd_list_len: int
     objCount = int(len(dList) / mjd_list_len)
     helioTruth = []
     for oid in range(objCount):
-        x = mjdList[oid * mjd_list_len: (oid + 1) * mjd_list_len] # day
-        y = dList[oid * mjd_list_len: (oid + 1) * mjd_list_len] # AU
+        x = mjdList[oid * mjd_list_len: (oid + 1) * mjd_list_len]  # day
+        y = dList[oid * mjd_list_len: (oid + 1) * mjd_list_len]  # AU
         fit = np.polyfit(x, y, 2)
         helioTruth.append(fit)
 
@@ -223,14 +224,27 @@ def count_lines(filename: str):
     return int(t.stdout.decode().strip().split(" ")[0])
 
 
-
-def plot_hypo_diff_grid(helio_extracted, obj_table, ax=None, c_linked = "blue", c_not_linked = "orange"):
+def plot_hypo_diff_grid(helio_extracted, obj_table, ax=None, c_linked="blue", c_not_linked="orange"):
     linked_id_list = set(helio_extracted['idstring'].unique())
     linked_obj_list = obj_table[obj_table['ObjID'].isin(linked_id_list)]
     not_linked_obj_list = obj_table[~obj_table['ObjID'].isin(linked_id_list)]
     if ax:
-        ax.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c=c_linked)
-        ax.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c=c_not_linked)
+        ax.scatter(linked_obj_list['helioDist'],
+                   linked_obj_list['helioVel'], s=1, c=c_linked)
+        ax.scatter(not_linked_obj_list['helioDist'],
+                   not_linked_obj_list['helioVel'], s=1, c=c_not_linked)
     else:
-        plt.scatter(linked_obj_list['helioDist'], linked_obj_list['helioVel'], s=1, c=c_linked)
-        plt.scatter(not_linked_obj_list['helioDist'], not_linked_obj_list['helioVel'], s=1, c=c_not_linked)
+        plt.scatter(linked_obj_list['helioDist'],
+                    linked_obj_list['helioVel'], s=1, c=c_linked)
+        plt.scatter(not_linked_obj_list['helioDist'],
+                    not_linked_obj_list['helioVel'], s=1, c=c_not_linked)
+
+
+def timeit(func):
+    def wrapper(*args, **kwargs):
+        start = time()
+        res = func(*args, **kwargs)
+        end = time()
+        print(f"Time elapsed: {end - start:.4f}s")
+        return res
+    return wrapper
