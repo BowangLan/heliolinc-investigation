@@ -4,7 +4,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import astropy.units as u
-import time
 from matplotlib.gridspec import GridSpec
 
 

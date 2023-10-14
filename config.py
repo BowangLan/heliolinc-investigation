@@ -5,31 +5,6 @@ import time
 HELIO_PATH = Path("./heliolinc2")
 
 
-dets_file = "./temp/dets.csv"
-object_table_file = "./temp/objTable.feather"
-guess_file = "./temp/hypo.csv"
-earth_file = HELIO_PATH / "tests/Earth1day2020s_02a.txt"
-obs_file = HELIO_PATH / "tests/ObsCodes.txt"
-colformat_file = "colformat.txt"
-out_pairdets_file = "./temp/pairdets.csv"
-out_pairs_file = "./temp/pairs.csv"
-out_hl_file = "./temp/hl_out.csv"
-out_hlsum_file = "./temp/hl_outsum.csv"
-out_hl_extracted_file = "./temp/hl_extracted.feather"
-
-dets_file = "./temp/dets.csv"
-object_table_file = "./temp/objTable.feather"
-guess_file = "./temp/hypo.csv"
-earth_file = HELIO_PATH / "tests/Earth1day2020s_02a.txt"
-obs_file = HELIO_PATH / "tests/ObsCodes.txt"
-colformat_file = "colformat.txt"
-out_pairdets_file = "./temp/pairdets.csv"
-out_pairs_file = "./temp/pairs.csv"
-out_hl_file = "./temp/hl_out.csv"
-out_hlsum_file = "./temp/hl_outsum.csv"
-out_hl_extracted_file = "./temp/hl_extracted.feather"
-
-
 def insert_postfix_to_filepath(filepath: str, p: str):
     *a, b = filepath.split('.')
     return '.'.join(a) + f"-{p}." + b

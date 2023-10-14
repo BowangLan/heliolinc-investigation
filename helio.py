@@ -42,9 +42,9 @@ def run_heliolinc(
         mjd: int,
         obspos: str,
         heliodist: str,
-        out: str = "./temp/hl_output.csv",
-        outsum: str = "./temp/hl_outsum.csv",
-        stdout_file: str = "./temp/heliolinc_output.txt",
+        out: str,
+        outsum: str,
+        stdout_file: str
 ):
     """
     Runs the heliolinc executable with the given parameters.

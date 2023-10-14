@@ -7,16 +7,19 @@ import pandas as pd
 
 class HelioManager():
 
-    def __init__(self, sharedConfig: HelioSharedConfig, outputConfig: HelioOutputConfig):
+    sharedConfig: HelioSharedConfig
+    outputConfig: HelioOutputConfig
+
+    def __init__(self, sharedConfig: HelioSharedConfig, outputConfig: HelioOutputConfig) -> None:
         self.sharedConfig = sharedConfig
         self.outputConfig = outputConfig
 
     @timeit
-    def generate_guess_grid(self):
+    def generate_guess_grid(self) -> None:
         createHelioGuessGrid(self.sharedConfig.guess_file)
 
     @timeit
-    def generate_dets(self):
+    def generate_dets(self) -> None:
         objs = createRandomObjects(self.sharedConfig.size)
         pop = destnosim.ElementPopulation(objs, self.sharedConfig.t)
         dets = createObservationsSpacerocks(pop, self.sharedConfig.mjd_list)
@@ -28,7 +31,7 @@ class HelioManager():
         objTable.to_feather(self.outputConfig.object_table_file)
 
     @timeit
-    def run_helio(self):
+    def run_helio(self) -> None:
         """Runs make_tracklets and heliolinc using the provided config from the class instance.
         """
         run_make_tracklets(self.outputConfig.dets_file, self.sharedConfig.earth_file, self.sharedConfig.obs_file,
@@ -36,7 +39,8 @@ class HelioManager():
 
         run_heliolinc(self.outputConfig.out_pairdets_file, self.outputConfig.out_pairs_file,
                       self.sharedConfig.mjd_ref, self.sharedConfig.earth_file, self.sharedConfig.guess_file,
-                      out=self.outputConfig.out_hl_file, outsum=self.outputConfig.out_hlsum_file)
+                      out=self.outputConfig.out_hl_file, outsum=self.outputConfig.out_hlsum_file,
+                      stdout_file=self.outputConfig.output_dir / "heliolinc_stdout.txt")
 
     @timeit
     def extract_helio_results(self) -> None:
