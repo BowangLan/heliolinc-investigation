@@ -1,4 +1,4 @@
-from utils import createObservationsSpacerocks, createRandomObjects, createHelioGuessGrid, extract_heliolinc_results, extract_object_truth_values, timeit
+from utils import createObservationsSpacerocks, createRandomObjects, create_helio_guess_grid, extract_heliolinc_results, extract_object_truth_values, timeit
 import destnosim
 from helio import run_make_tracklets, run_heliolinc
 from config import *
@@ -16,7 +16,7 @@ class HelioManager():
 
     @timeit
     def generate_guess_grid(self) -> None:
-        createHelioGuessGrid(self.sharedConfig.guess_file)
+        create_helio_guess_grid(self.sharedConfig.guess_file)
 
     @timeit
     def generate_dets(self) -> None:
@@ -73,4 +73,8 @@ class HelioManager():
 
     def get_object_table(self) -> pd.DataFrame:
         df = pd.read_feather(self.outputConfig.object_table_file)
+        return df
+
+    def get_guess_table(self) -> pd.DataFrame:
+        df = pd.read_csv(self.sharedConfig.guess_file, delimiter=' ')
         return df

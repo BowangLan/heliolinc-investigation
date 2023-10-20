@@ -168,7 +168,7 @@ def createObservationsSpacerocks(population, mjd, progress=False):
 
 # Creates a helio guess grid and writes it to out_filename
 
-def createHelioGuessGrid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r_dot_dot_range=(0, 0), geometric_r=False, ns=(50, 5, 1), n_round=3):
+def create_helio_guess_grid(out_filename, r_range=(1.1, 50), r_dot_range=(-1, 1), r_dot_dot_range=(0, 0), geometric_r=False, ns=(50, 5, 1), n_round=3):
     r = np.linspace(r_range[0], r_range[1], ns[0])
     if geometric_r:
         r = np.logspace(r_range[0], r_range[1], ns[0])
