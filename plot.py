@@ -62,9 +62,10 @@ def plot_hist2d(linked_obj_list, not_linked_obj_list):
 
 
 if __name__ == "__main__":
-    helio_extracted = pd.read_feather(out_hl_extracted_file)
-    obj_table = pd.read_feather(object_table_file)
-    guess_table = pd.read_csv(guess_file, delimiter=' ')
+    output_dir = Path("./temp/f2")
+    helio_extracted = pd.read_feather(output_dir / "extracted_output.feather")
+    obj_table = pd.read_feather(output_dir / "obj_table.feather")
+    guess_table = pd.read_csv("./temp/hypo.csv", delimiter=' ')
 
     linked_id_list = set(helio_extracted['idstring'].unique())
     l_obj_list, not_l_obj_list = separate_linked(linked_id_list, obj_table)
@@ -72,9 +73,12 @@ if __name__ == "__main__":
     # plt.scatter(guess_table['#r(AU)'],
     #             guess_table['rdot(AU/day)'], s=2, c="black")
 
-    plot_hist2d(l_obj_list, not_l_obj_list)
+    print("Not linked objects:", len(not_l_obj_list))
+    print("Linked objects:", len(l_obj_list))
 
-    plt.show()
+    # plot_hist2d(l_obj_list, not_l_obj_list)
+
+    # plt.show()
 
     # start = time.time()
 

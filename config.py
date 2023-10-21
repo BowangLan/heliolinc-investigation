@@ -30,6 +30,7 @@ class HelioSharedConfig(BaseModel):
 
 class HelioOutputConfig(BaseModel):
 
+    startOidIndex: int
     output_dir: Path
 
     def create_output_dir(self):
@@ -42,7 +43,7 @@ class HelioOutputConfig(BaseModel):
 
     @property
     def object_table_file(self):
-        return self.output_dir / "objTable.feather"
+        return self.output_dir / "obj_table.feather"
 
     @property
     def out_pairdets_file(self):

@@ -17,7 +17,7 @@ from spacerocks.observer import Observer
 from spacerocks.constants import epsilon
 
 
-def createRandomObjects(size: int):
+def create_random_objects(size: int):
     # a, e, i, lan, aop, M
     # a : 1.1 -  50
     # e : 0.0 - 0.99
@@ -51,7 +51,7 @@ def createRandomObjects(size: int):
     return table
 
 
-def createObservationsSpacerocks(population, mjd, progress=False):
+def create_observations_spacerocks(population, mjd: list[float], progress: bool = False, startOidIndex: int = 0):
     '''
     Calls the Spacerocks backend to generate observations for the input population
 
@@ -81,7 +81,7 @@ def createObservationsSpacerocks(population, mjd, progress=False):
     decs = np.array([])
     orbitid = np.array([])
     mjds = np.array([])
-    oidlist = np.arange(len(population))
+    oidlist = np.arange(startOidIndex, len(population) + startOidIndex)
     xList = np.array([])
     yList = np.array([])
     zList = np.array([])
@@ -201,22 +201,34 @@ def extract_heliolinc_results(hl_out_file, hl_outsum_file):
                          'heliodist': outs['heliodist'], 'heliovel': outs['heliovel'], 'helioacc': outs['helioacc']})
 
 
-def extract_object_truth_values(dets, mjdRef: float = 60683.5, mjd_list_len: int = 6):
-    dets1 = dets[['ObjID', 'd', 'FieldMJD']]
-    dets1 = dets1.sort_values('ObjID')
-    dList = dets1['d'].values
-    mjdList = (dets1['FieldMJD'] - mjdRef).values
-    objCount = int(len(dList) / mjd_list_len)
-    helioTruth = []
-    for oid in range(objCount):
-        x = mjdList[oid * mjd_list_len: (oid + 1) * mjd_list_len]  # day
-        y = dList[oid * mjd_list_len: (oid + 1) * mjd_list_len]  # AU
-        fit = np.polyfit(x, y, 2)
-        helioTruth.append(fit)
+def extract_object_truth_values(dets: pd.DataFrame, mjdRef: float, mjdListLen: int):
+    # dets = dets[['ObjID', 'd', 'FieldMJD']]
+    # dets = dets.sort_values('ObjID')
+    # dList = dets['d']
+    # objIdList = dets['ObjID'].unique()
+    # mjdList = dets['FieldMJD'].values
+    # mjdListLen = 6
+    # helioTruth = []
 
-    helioTruth = np.array(helioTruth)
-    ha, hv, hd = helioTruth.T
-    return pd.DataFrame({'ObjID': np.arange(objCount), 'helioDist': hd, 'helioVel': hv, 'helioAcc': ha})
+    # for oid in objIdList:
+    #     x = mjdList[oid * mjdListLen: (oid + 1) * mjdListLen]  # day
+    #     y = dList[oid * mjdListLen: (oid + 1) * mjdListLen]  # AU
+    #     fit = np.polyfit(x, y, 2)
+    #     helioTruth.append(fit)
+    helioTruth = {}
+
+    def item(row):
+        oid = row['ObjID'].values[0]
+        x = row['FieldMJD'].values
+        y = row['d'].values
+        fit = np.polyfit(x, y, 2)
+        helioTruth[oid] = fit
+
+    dets.groupby("ObjID", group_keys=True).apply(item)
+
+    helioTruthNdArray = np.array(list(helioTruth.values()))
+    ha, hv, hd = helioTruthNdArray.T
+    return pd.DataFrame({'ObjID': list(helioTruth.keys()), 'helioDist': hd, 'helioVel': hv, 'helioAcc': ha})
 
 
 def count_lines(filename: str):

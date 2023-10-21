@@ -1,5 +1,5 @@
-from utils import createObservationsSpacerocks, createRandomObjects, create_helio_guess_grid, extract_heliolinc_results, extract_object_truth_values, timeit
-import destnosim
+from utils import create_observations_spacerocks, create_random_objects, create_helio_guess_grid, extract_heliolinc_results, extract_object_truth_values, timeit
+from destnosim import ElementPopulation
 from helio import run_make_tracklets, run_heliolinc
 from config import *
 import pandas as pd
@@ -20,15 +20,16 @@ class HelioManager():
 
     @timeit
     def generate_dets(self) -> None:
-        objs = createRandomObjects(self.sharedConfig.size)
-        pop = destnosim.ElementPopulation(objs, self.sharedConfig.t)
-        dets = createObservationsSpacerocks(pop, self.sharedConfig.mjd_list)
+        objs = create_random_objects(self.sharedConfig.size)
+        pop = ElementPopulation(objs, self.sharedConfig.t)
+        dets = create_observations_spacerocks(
+            pop, self.sharedConfig.mjd_list, startOidIndex=self.outputConfig.startOidIndex)
         dets.write(self.outputConfig.dets_file, overwrite=True)
 
         # create object table
-        objTable = extract_object_truth_values(
-            dets.to_pandas(), mjdRef=self.sharedConfig.mjd_ref, mjd_list_len=len(self.sharedConfig.mjd_list))
-        objTable.to_feather(self.outputConfig.object_table_file)
+        obj_table = extract_object_truth_values(
+            dets.to_pandas(), self.sharedConfig.mjd_ref, len(self.sharedConfig.mjd_list))
+        obj_table.to_feather(self.outputConfig.object_table_file)
 
     @timeit
     def run_helio(self) -> None:
@@ -47,6 +48,8 @@ class HelioManager():
         helio_res_extracted = extract_heliolinc_results(
             self.outputConfig.out_hl_file, self.outputConfig.out_hlsum_file)
         helio_res_extracted.to_feather(self.outputConfig.out_hl_extracted_file)
+        print(
+            f"[Task {self.outputConfig.startOidIndex}] Extracted helio results saved to {self.outputConfig.out_hl_extracted_file}")
 
     def run(self) -> None:
 

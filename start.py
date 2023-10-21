@@ -1,4 +1,4 @@
-from utils import createObservationsSpacerocks, createRandomObjects, create_helio_guess_grid, extract_heliolinc_results, extract_object_truth_values, timeit
+from utils import create_observations_spacerocks, create_random_objects, create_helio_guess_grid, extract_heliolinc_results, extract_object_truth_values, timeit
 from manager import HelioManager
 from config import *
 import concurrent.futures
@@ -8,10 +8,11 @@ import pandas as pd
 print("Library loaded")
 
 
-def generate_helio_output_config_list(output_path: Path, chunck_count: int):
+def generate_helio_output_config_list(output_path: Path, chunck_count: int, chunk_size: int):
     return [
         HelioOutputConfig(
-            output_dir=output_path / f"{i}"
+            output_dir=output_path / f"{i}",
+            startOidIndex=(i - 1) * chunk_size
         ) for i in range(1, chunck_count + 1)
     ]
 
@@ -53,12 +54,13 @@ def combine_output(sharedConfig: HelioSharedConfig, output_config_list: list[Hel
 
 @timeit
 def main():
-    chunck_size = 8
-    output_dir = Path("./temp/f1")
+    chunck_count = 12
+    chunk_size = 800
+    output_dir = Path("./temp/f2")
     t = 25
     mjd_list = [t + 60676 for t in [0.5, 0.6, 7.5, 7.6, 13.5, 13.6]]
     sharedConfig = HelioSharedConfig(
-        size=1000,
+        size=chunk_size,
         t=t,
         mjd_list=mjd_list,
         guess_file=Path("./temp/hypo.csv"),
@@ -69,20 +71,21 @@ def main():
 
     print("Generating output config list...")
     outputConfigList = generate_helio_output_config_list(
-        output_dir, chunck_size)
+        output_dir, chunck_count, chunk_size)
 
     print("Generating helio guess grid...")
     create_helio_guess_grid(sharedConfig.guess_file)
 
     # running with parallel
     with concurrent.futures.ProcessPoolExecutor(max_workers=8) as executor:
-        executor.map(chunck_task, [sharedConfig] *
-                     chunck_size, outputConfigList, range(1, chunck_size + 1))
+        executor.map(chunck_task, [sharedConfig] * chunck_count, 
+                     outputConfigList, range(1, chunck_count + 1))
 
     # running in series
-    # chunck_task(sharedConfig, outputConfigList[0], 1)
     # for i, outputConfig in enumerate(outputConfigList):
     #     chunck_task(sharedConfig, outputConfig, i + 1)
+
+    print("Finish chunck tasks")
 
     print("Combining output...")
     combine_output(sharedConfig, outputConfigList, output_dir)
